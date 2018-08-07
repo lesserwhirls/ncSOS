@@ -1,12 +1,14 @@
 package com.asascience.ncsos.util;
 
 //import org.apache.log4j.Logger;
-import thredds.servlet.DatasetHandler;
+import thredds.core.TdsRequestedDataset;
 import thredds.servlet.ServletUtil;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.ft.DsgFeatureCollection;
 import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.PointFeatureCollection;
+import ucar.nc2.ft.StationProfileFeature;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,8 +48,7 @@ public class DatasetHandlerAdapter {
             
         } else {
             try {
-            	
-                            netcdfFile = DatasetHandler.getNetcdfFile(req, res, datasetPath);
+                netcdfFile = TdsRequestedDataset.getNetcdfFile(req, res, datasetPath);
             //    _log.debug("netcdfFile location: " + netcdfFile.getLocation());
                dataset = new NetcdfDataset(netcdfFile);
             
@@ -84,7 +85,8 @@ public class DatasetHandlerAdapter {
      */
     public static boolean calcBounds(final PointFeatureCollection collection) {
         try {
-            collection.calcBounds();
+            collection.getBoundingBox();
+            collection.getCalendarDateRange();
         } catch (Exception ex) {
             _log.error("Could not calculate the bounds of the PointFeatureCollection " + collection.getName() + "\n" + ex.getLocalizedMessage());
             return false;
@@ -96,6 +98,21 @@ public class DatasetHandlerAdapter {
         return true;
     }
 
+    public static boolean calcBounds(final DsgFeatureCollection collection) {
+        try {
+            collection.getBoundingBox();
+            collection.getCalendarDateRange();
+        } catch (Exception ex) {
+            _log.error("Could not calculate the bounds of the DsgFeatureCollection " + collection.getName() + "\n" + ex.getLocalizedMessage());
+            return false;
+        } catch (Error err) {
+            _log.error("Could not caluclate the bounds of the DsgFeatureCollection " + collection.getName() + "\n" + err.getLocalizedMessage());
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * 
      * @since authored by Sean Cowan - 10.16.2012
@@ -104,7 +121,8 @@ public class DatasetHandlerAdapter {
      */
     public static boolean calcBounds(FeatureDataset featureDataset) {
         try {
-            featureDataset.calcBounds();
+            featureDataset.getBoundingBox();
+            featureDataset.getCalendarDateRange();
         } catch (Exception ex) {
             _log.error("Could not calculate the bounds of the FeatureDataset " + featureDataset.getTitle() + "\n" + ex.getLocalizedMessage());
             return false;

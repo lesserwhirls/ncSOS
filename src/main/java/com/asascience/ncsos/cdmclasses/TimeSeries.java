@@ -67,7 +67,6 @@ public class TimeSeries extends baseCDMClass implements iStationData {
     private String createTimeSeriesData(int stNum) throws IOException {
         //create the iterator for the feature
         PointFeatureIterator iterator = tsData.getStationFeature(tsStationList.get(stNum)).getPointFeatureIterator(-1);
-
         //create the string builders and other things needed
         StringBuilder builder = new StringBuilder();
         DateFormatter dateFormatter = new DateFormatter();

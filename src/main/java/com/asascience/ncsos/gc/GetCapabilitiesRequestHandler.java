@@ -244,7 +244,7 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
                         while (collection.hasNext()) {
                             ProfileFeature feature = collection.next();
                             if (DatasetHandlerAdapter.calcBounds(feature)) {
-                                CalendarDate profileDate = CalendarDate.of(feature.getTime());
+                                CalendarDate profileDate = CalendarDate.of(feature.getTime().toDate());
                                 if (start == null || start.isAfter(profileDate)) {
                                     start = profileDate;
                                 }
@@ -275,46 +275,40 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
                         StationProfileFeatureCollection collection = (StationProfileFeatureCollection) getFeatureTypeDataSet();
                         collection.resetIteration();
                         while (collection.hasNext()) {
-                            StationProfileFeature feature = collection.next();
-                            PointFeatureCollection flattened = feature.flatten(null, nullrange);
-                            if (DatasetHandlerAdapter.calcBounds(flattened)) {
-                                if (start == null || start.isAfter(flattened.getCalendarDateRange().getStart())) {
-                                    start = flattened.getCalendarDateRange().getStart();
+                            DsgFeatureCollection feature = collection.next();
+                            if (DatasetHandlerAdapter.calcBounds(feature)) {
+                                if (start == null || start.isAfter(feature.getCalendarDateRange().getStart())) {
+                                    start = feature.getCalendarDateRange().getStart();
                                 }
-                                if (end == null || end.isBefore(flattened.getCalendarDateRange().getEnd())) {
-                                    end = flattened.getCalendarDateRange().getEnd();
+                                if (end == null || end.isBefore(feature.getCalendarDateRange().getEnd())) {
+                                    end = feature.getCalendarDateRange().getEnd();
                                 }
-                                this.stationDateRange.put(stationIndex, flattened.getCalendarDateRange());
-                                this.stationBBox.put(stationIndex, flattened.getBoundingBox());
+                                this.stationDateRange.put(stationIndex, feature.getCalendarDateRange());
+                                this.stationBBox.put(stationIndex, feature.getBoundingBox());
                                 stationIndex++;
-                            } else {
-                                GetExtentsFromSubFeatures(flattened, stationIndex);
                             }
                         }
                     } catch (Exception ex) {
                         _log.error(ex.getMessage(), ex);
                     }
                     break;
-                case SECTION:
+                case TRAJECTORY_PROFILE:
                     try {
                         CalendarDateRange nullrange = null;
-                        SectionFeatureCollection collection = (SectionFeatureCollection) getFeatureTypeDataSet();
+                        TrajectoryProfileFeatureCollection collection = (TrajectoryProfileFeatureCollection) getFeatureTypeDataSet();
                         collection.resetIteration();
                         while (collection.hasNext()) {
-                            SectionFeature feature = collection.next();
-                            PointFeatureCollection flattened = feature.flatten(null, nullrange);
-                            if (DatasetHandlerAdapter.calcBounds(flattened)) {
-                                if (start == null || start.isAfter(flattened.getCalendarDateRange().getStart())) {
-                                    start = flattened.getCalendarDateRange().getStart();
+                            DsgFeatureCollection feature = collection.next();
+                            if (DatasetHandlerAdapter.calcBounds(feature)) {
+                                if (start == null || start.isAfter(feature.getCalendarDateRange().getStart())) {
+                                    start = feature.getCalendarDateRange().getStart();
                                 }
-                                if (end == null || end.isBefore(flattened.getCalendarDateRange().getEnd())) {
-                                    end = flattened.getCalendarDateRange().getEnd();
+                                if (end == null || end.isBefore(feature.getCalendarDateRange().getEnd())) {
+                                    end = feature.getCalendarDateRange().getEnd();
                                 }
-                                this.stationDateRange.put(stationIndex, flattened.getCalendarDateRange());
-                                this.stationBBox.put(stationIndex, flattened.getBoundingBox());
+                                this.stationDateRange.put(stationIndex, feature.getCalendarDateRange());
+                                this.stationBBox.put(stationIndex, feature.getBoundingBox());
                                 stationIndex++;
-                            } else {
-                                GetExtentsFromSubFeatures(flattened, stationIndex);
                             }
                         }
                     } catch (Exception ex) {

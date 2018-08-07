@@ -8,13 +8,13 @@ import java.util.List;
 
 public class DiscreteSamplingGeometryUtil {
 
-    public static FeatureCollection extractFeatureDatasetCollection(FeatureDataset featureDataset) {
+    public static DsgFeatureCollection extractFeatureDatasetCollection(FeatureDataset featureDataset) {
         if (featureDataset instanceof FeatureDatasetPoint) {
             FeatureDatasetPoint featureDatasetPoint = (FeatureDatasetPoint) featureDataset;
-            List<FeatureCollection> featureCollectionList = featureDatasetPoint.getPointFeatureCollectionList();
+            List<DsgFeatureCollection> featureCollectionList = featureDatasetPoint.getPointFeatureCollectionList();
             if (featureCollectionList != null && featureCollectionList.size() > 0) {
                 if (featureCollectionList.size() == 1) {
-                    FeatureCollection featureCollection = featureCollectionList.get(0);
+                    DsgFeatureCollection featureCollection = featureCollectionList.get(0);
 
                     if (featureCollection instanceof StationTimeSeriesFeatureCollection) {
                         return (StationTimeSeriesFeatureCollection) featureCollection;
@@ -50,11 +50,11 @@ public class DiscreteSamplingGeometryUtil {
                     } else if (featureCollection instanceof PointFeatureCollection) {
                         return (PointFeatureCollection) featureCollection;
                         
-                    } else if (featureCollection instanceof SectionFeature) {
-                        return (SectionFeature) featureCollection;
+                    } else if (featureCollection instanceof TrajectoryProfileFeature) {
+                        return (TrajectoryProfileFeature) featureCollection;
                         
-                    } else if (featureCollection instanceof SectionFeatureCollection) {
-                        return (SectionFeatureCollection) featureCollection;
+                    } else if (featureCollection instanceof TrajectoryProfileFeatureCollection) {
+                        return (TrajectoryProfileFeatureCollection) featureCollection;
                         
                     }
                     else {

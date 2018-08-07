@@ -202,7 +202,7 @@ public class IoosNetwork10Handler extends Ioos10Handler implements BaseDSInterfa
                 this.stationData = new Trajectory(stationsNamesFromUrn,null,null);
                 this.stationData.setData(this.getFeatureTypeDataSet());
                 break;
-            case SECTION:
+            case TRAJECTORY_PROFILE:
                 // remove 'Trajectory' from the station names, since they are arbitrary
                 /*
                 stationNames = ListComprehension.map(stationNames, new ListComprehension.Func<String, String>() {

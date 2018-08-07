@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import ucar.nc2.dataset.NetcdfDataset;
-import thredds.servlet.ThreddsConfig;
+import thredds.server.config.ThreddsConfig;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -47,8 +47,8 @@ public class SosController implements ISosContoller {
     /** 
      * Generate SOS for the underlying NetcdfDataset
      * 
-     * @param request incoming url request 
-     * @param response outgoing web based response
+     * @param req incoming url request
+     * @param res outgoing web based response
      * @throws ServletException if ServletException occurred
      * @throws IOException if IOException occurred 
      */

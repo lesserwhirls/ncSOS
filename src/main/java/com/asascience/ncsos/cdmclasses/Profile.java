@@ -97,11 +97,11 @@ public class Profile extends baseCDMClass implements iStationData {
                 // check to make sure the profile falls into the event time
                 if (eventStart != null) {
                     // does it lie after or at start?
-                    if (pFeature.getTime().before(eventStart.toDate()))
+                    if (pFeature.getTime().toDate().before(eventStart.toDate()))
                         continue;
                     if (eventEnd != null) {
                         // does it lie before or at end?
-                        if (pFeature.getTime().after(eventEnd.toDate()))
+                        if (pFeature.getTime().toDate().after(eventEnd.toDate()))
                             continue;
                     }
                 }
@@ -269,7 +269,7 @@ public class Profile extends baseCDMClass implements iStationData {
     @Override
     public String getTimeEnd(int stNum) {
         if (profileData != null && profileList.containsKey(stNum)) {
-            return df.toDateTimeStringISO(profileList.get(stNum).getTime());
+            return df.toDateTimeStringISO(profileList.get(stNum).getTime().toDate());
         } else {
             return ERROR_NULL_DATE;
         }
@@ -279,7 +279,7 @@ public class Profile extends baseCDMClass implements iStationData {
     public String getTimeBegin(int stNum) {
 
         if (profileData != null && profileList.containsKey(stNum)) {
-            return df.toDateTimeStringISO(profileList.get(stNum).getTime());
+            return df.toDateTimeStringISO(profileList.get(stNum).getTime().toDate());
         } else {
             return ERROR_NULL_DATE;
         }
@@ -295,7 +295,7 @@ public class Profile extends baseCDMClass implements iStationData {
     private void addProfileData(List<String> valueList, DateFormatter dateFormatter, StringBuilder builder, ProfileFeature profileFeature, int stNum) {
         //set the iterator the the correct profile
         try {
-            PointFeatureIterator pointIterator = profileFeature.getPointFeatureIterator(-1);
+            PointFeatureIterator pointIterator = profileFeature.getPointFeatureIterator();
             while (pointIterator.hasNext()) {
                 PointFeature pointFeature = pointIterator.next();
 
@@ -303,7 +303,7 @@ public class Profile extends baseCDMClass implements iStationData {
                 //if there is a profile id use it against the data that is requested
                 if (profileID != null) {
                     valueList.clear();
-                    valueList.add("time=" + dateFormatter.toDateTimeStringISO(profileFeature.getTime()));
+                    valueList.add("time=" + dateFormatter.toDateTimeStringISO(profileFeature.getTime().toDate()));
                     valueList.add("station=" + stNum);
                     addProfileDataToBuilder(valueList, pointFeature, builder);
                 }
@@ -317,7 +317,7 @@ public class Profile extends baseCDMClass implements iStationData {
 
     private void addProfileDataToBuilder(List<String> valueList, PointFeature pointFeature, StringBuilder builder) throws IOException {
         for (String variableName : variableNames) {
-            valueList.add(variableName + "=" + pointFeature.getData().getScalarObject(variableName).toString());
+            valueList.add(variableName + "=" + pointFeature.getDataAll().getScalarObject(variableName).toString());
         }
 
         for (int i = 0; i < valueList.size(); i++) {

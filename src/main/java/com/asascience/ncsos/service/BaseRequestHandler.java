@@ -18,6 +18,7 @@ import ucar.nc2.dt.GridDataset;
 import ucar.nc2.dt.GridDataset.Gridset;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.ft.*;
+import ucar.nc2.util.IOIterator;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -57,7 +58,7 @@ public abstract class BaseRequestHandler {
     // list of keywords to filter variables on to remove non-data variables from the list
     private static final String[] NON_DATAVAR_NAMES = { "rowsize", "row_size", PROFILE, "info", "time", "z", "alt", "height", "station_info" };
     private FeatureDataset featureDataset;
-    private FeatureCollection CDMPointFeatureCollection;
+    private DsgFeatureCollection CDMPointFeatureCollection;
     private GridDataset gridDataSet = null;
     
     // Global Attributes
@@ -191,7 +192,7 @@ public abstract class BaseRequestHandler {
             return;
         }
         // if dataFeatureType is none/null (not GRID) get the point feature collection
-        if (dataFeatureType == null || dataFeatureType == FeatureType.NONE) {
+        if (dataFeatureType == null) {
             CDMPointFeatureCollection = DiscreteSamplingGeometryUtil.extractFeatureDatasetCollection(featureDataset);
             dataFeatureType = CDMPointFeatureCollection.getCollectionFeatureType();
 
@@ -229,8 +230,8 @@ public abstract class BaseRequestHandler {
                 case TRAJECTORY:
                     featureDataset = FeatureDatasetFactoryManager.wrap(FeatureType.TRAJECTORY, netCDFDataset, null, new Formatter(System.err));
                     break;
-                case SECTION:
-                    featureDataset = FeatureDatasetFactoryManager.wrap(FeatureType.SECTION, netCDFDataset, null, new Formatter(System.err));
+                case TRAJECTORY_PROFILE:
+                    featureDataset = FeatureDatasetFactoryManager.wrap(FeatureType.TRAJECTORY_PROFILE, netCDFDataset, null, new Formatter(System.err));
                     break;
                 case POINT:
                     featureDataset = FeatureDatasetFactoryManager.wrap(FeatureType.POINT, netCDFDataset, null, new Formatter(System.err));
@@ -432,7 +433,7 @@ public abstract class BaseRequestHandler {
     }
 
 
-    private String getPlatformName(FeatureCollection fc, int index) {
+    private String getPlatformName(DsgFeatureCollection fc, int index) {
         // If NCJ can't pull out the FC name, we need to populate it with something
         // like TRAJECTORY-0, STATION-0, PROFILE-0
     	String fcName = fc.getName();
@@ -450,25 +451,16 @@ public abstract class BaseRequestHandler {
      * @return Next station index
      * @throws IOException 
      */
-    private int parseNestedCollection(NestedPointFeatureCollection npfc, int stationIndex,
-    		Map<Integer,String> stationMap) throws IOException { 
-        if (npfc.isMultipleNested()) {
-            NestedPointFeatureCollectionIterator npfci = npfc.getNestedPointFeatureCollectionIterator(-1);
-            while (npfci.hasNext()) {
-                NestedPointFeatureCollection n = npfci.next();
-                
-                stationMap.put(stationIndex, this.getPlatformName(n, stationIndex));
-                stationIndex += 1;
-            }
-        } else {
-            PointFeatureCollectionIterator pfci = npfc.getPointFeatureCollectionIterator(-1);
-            while (pfci.hasNext()) {
-                PointFeatureCollection n = pfci.next();
-                stationMap.put(stationIndex, this.getPlatformName(n, stationIndex));
-                stationIndex += 1;
-            }
+    private int parseNestedCollection(PointFeatureCC npfc, int stationIndex,
+        Map<Integer,String> stationMap) throws IOException {
+
+        IOIterator<PointFeatureCollection> pfci = npfc.getCollectionIterator();
+        while (pfci.hasNext()) {
+            PointFeatureCollection n = pfci.next();
+            stationMap.put(stationIndex, this.getPlatformName(n, stationIndex));
+            stationIndex += 1;
         }
-        
+
         return stationIndex;
     }
     
@@ -495,8 +487,8 @@ public abstract class BaseRequestHandler {
         if (CDMPointFeatureCollection instanceof PointFeatureCollection) {
             PointFeatureCollection pfc = (PointFeatureCollection) CDMPointFeatureCollection;
             parsePointFeatureCollectionNames(pfc, stationIndex,stationMap);
-        } else if (CDMPointFeatureCollection instanceof NestedPointFeatureCollection) {
-            NestedPointFeatureCollection npfc = (NestedPointFeatureCollection) CDMPointFeatureCollection;
+        } else if (CDMPointFeatureCollection instanceof PointFeatureCC) {
+            PointFeatureCC npfc = (PointFeatureCC) CDMPointFeatureCollection;
             parseNestedCollection(npfc, stationIndex,stationMap);
         }
     }
@@ -726,7 +718,7 @@ public abstract class BaseRequestHandler {
      * Gets the dataset currently in use
      * @return feature collection dataset
      */
-    public FeatureCollection getFeatureTypeDataSet() {
+    public DsgFeatureCollection getFeatureTypeDataSet() {
         return CDMPointFeatureCollection;
     }
 

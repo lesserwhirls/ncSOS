@@ -27,8 +27,8 @@ import java.util.*;
 public class Section extends baseCDMClass implements iStationData {
     private final ArrayList<String> eventTimes;
     private final String[] variableNames;
-    private SectionFeatureCollection sectionData;
-    private ArrayList<SectionFeature> sectionList;
+    private TrajectoryProfileFeatureCollection sectionData;
+    private ArrayList<TrajectoryProfileFeature> sectionList;
     private ArrayList<Double> altMin;
     private ArrayList<Double> altMax;
     
@@ -60,7 +60,7 @@ public class Section extends baseCDMClass implements iStationData {
      * @param section
      * @return
      */
-    public static LatLonRect getBoundingBox(SectionFeature section) {
+    public static LatLonRect getBoundingBox(TrajectoryProfileFeature section) {
         LatLonRect retval = null;
         double lLat, lLon, uLat, uLon;
         lLat = lLon = Double.MAX_VALUE;
@@ -97,9 +97,9 @@ public class Section extends baseCDMClass implements iStationData {
     
     @Override
     public void setData(Object featureCollection) throws IOException {
-        this.sectionData = (SectionFeatureCollection) featureCollection;
+        this.sectionData = (TrajectoryProfileFeatureCollection) featureCollection;
         
-        sectionList = new ArrayList<SectionFeature>();
+        sectionList = new ArrayList<TrajectoryProfileFeature>();
         
         altMin = new ArrayList<Double>();
         altMax = new ArrayList<Double>();
@@ -115,7 +115,7 @@ public class Section extends baseCDMClass implements iStationData {
         lowerLat = lowerLon = Double.POSITIVE_INFINITY;
 
         for (sectionData.resetIteration();sectionData.hasNext();) {
-            SectionFeature sectFeature = sectionData.next();
+            TrajectoryProfileFeature sectFeature = sectionData.next();
             LatLonRect bbox = getBoundingBox(sectFeature);
             CalendarDateRange dateRange = getDateRange(sectFeature);
 
@@ -292,18 +292,18 @@ public class Section extends baseCDMClass implements iStationData {
 
     private String createSectionData(int stNum) {
         StringBuilder builder = new StringBuilder();
-        SectionFeature sectionFeature = sectionList.get(stNum);
+        TrajectoryProfileFeature sectionFeature = sectionList.get(stNum);
         addTrajectoryProfileData(builder, sectionFeature, stNum);
         return builder.toString();
     }
 
-    private void addTrajectoryProfileData(StringBuilder builder, SectionFeature sectionFeature, int stNum) {
+    private void addTrajectoryProfileData(StringBuilder builder, TrajectoryProfileFeature sectionFeature, int stNum) {
         try {
             List<String> valueList = new LinkedList<String>();
-            PointFeatureCollectionIterator profileCollectionIter = sectionFeature.getPointFeatureCollectionIterator(-1);
+            PointFeatureCollectionIterator profileCollectionIter = sectionFeature.getPointFeatureCollectionIterator();
             
             for (;profileCollectionIter.hasNext();) {
-                PointFeatureIterator pointIter = profileCollectionIter.next().getPointFeatureIterator(-1);
+                PointFeatureIterator pointIter = profileCollectionIter.next().getPointFeatureIterator();
                 DateTime pointTime;
                 DateTime dtStart;
                 DateTime dtEnd;
@@ -354,7 +354,7 @@ public class Section extends baseCDMClass implements iStationData {
                             break;
                     }
                 }
-                pointIter.finish();
+                pointIter.close();
             }
             profileCollectionIter.finish();
         } catch (Exception e) {
@@ -369,7 +369,7 @@ public class Section extends baseCDMClass implements iStationData {
 
         try {
             for (String variableName : variableNames) {
-                valueList.add(variableName + "=" + point.getData().getScalarObject(variableName).toString());
+                valueList.add(variableName + "=" + point.getDataAll().getScalarObject(variableName).toString());
             }
 
             for (String str : valueList) {
@@ -384,7 +384,7 @@ public class Section extends baseCDMClass implements iStationData {
         }
     }
     
-    private static CalendarDateRange getDateRange(SectionFeature section) {
+    private static CalendarDateRange getDateRange(TrajectoryProfileFeature section) {
         CalendarDateRange retval = new CalendarDateRange(CalendarDate.of(0), 60);
         
         try {
@@ -397,11 +397,11 @@ public class Section extends baseCDMClass implements iStationData {
                 // skip if we don't have any points
                 if (profile.size() == 0)
                     continue;
-                
-                if (profile.getTime().after(latestDate))
-                    latestDate = profile.getTime();
-                if (profile.getTime().before(earliestDate))
-                    earliestDate = profile.getTime();
+
+                if (profile.getTime().toDate().after(latestDate))
+                    latestDate = profile.getTime().toDate();
+                if (profile.getTime().toDate().before(earliestDate))
+                    earliestDate = profile.getTime().toDate();
             }
             CalendarDate cDate = CalendarDate.of(earliestDate);
             retval = new CalendarDateRange(cDate, (CalendarDate.of(latestDate).getDifferenceInMsecs(cDate) / 1000));
@@ -414,11 +414,11 @@ public class Section extends baseCDMClass implements iStationData {
 
     public List<String> getLocationsString(int stNum) {
         try {
-            PointFeatureCollectionIterator iter = this.sectionList.get(stNum).getPointFeatureCollectionIterator(-1);
+            PointFeatureCollectionIterator iter = this.sectionList.get(stNum).getPointFeatureCollectionIterator();
             List<String> retval = new ArrayList<String>();
             while (iter.hasNext()) {
                 PointFeatureCollection pfc = iter.next();
-                PointFeatureIterator pfiter = pfc.getPointFeatureIterator(-1);
+                PointFeatureIterator pfiter = pfc.getPointFeatureIterator();
                 while (pfiter.hasNext()) {
                     PointFeature pf = pfiter.next();
                     String location = pf.getLocation().getLatitude() + " " + pf.getLocation().getLongitude();
